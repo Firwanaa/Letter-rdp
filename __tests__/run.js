@@ -2,11 +2,11 @@
  * Main test runner
  */
 
-const {Parser} = require('../src/Parser');
+const { Parser } = require('../src/Parser');
 
 const parser = new Parser();
 
-const program = `4223`;
+const program = `"HZXci"`;
 
 const ast = parser.parse(program);
 
