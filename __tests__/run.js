@@ -11,7 +11,7 @@ const program = `
      * Multiline comment
      */
     "32"
-
+    
     // Number; //for next time
     42;
 
