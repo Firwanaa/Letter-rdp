@@ -1,4 +1,31 @@
 /**
+ * tokenizer spec.
+ */
+const Spec = [
+  // -------------------------------------------------------
+  // Whitespaces:
+
+  [/^\s+/, null],
+
+  // -------------------------------------------------------
+  // Comments:
+
+  [/^\/\/.*/, null],
+  [/^\/\*[\s\S]*?\*\//, null],
+
+  // -------------------------------------------------------
+  // Numbers:
+
+  [/^\d+/, 'NUMBER'],
+
+  // -------------------------------------------------------
+  // Strings:
+
+  [/^"[^"]*"/, 'STRING'],
+  [/^'[^']*'/, 'STRING'],
+];
+
+/**
  * Tokenizer class.
  *
  * Lazily pulls a token from a stream.
@@ -10,7 +37,7 @@ class Tokenizer {
   }
 
   // weather the tokenizer reached EOF.
-  isEOF(){
+  isEOF() {
     return this._cursor === this._string.length;
   }
 
@@ -31,48 +58,38 @@ class Tokenizer {
 
     const string = this._string.slice(this._cursor);
 
-    // Numbers:
-    if (!Number.isNaN(Number(string[0]))) {
-      let number = '';
-      while (!Number.isNaN(Number(string[this._cursor]))) {
-        // console.log('Cursor before at: ' + this._cursor);
-        number += string[this._cursor++]; //post-increment
-        // console.log('number is: ' + number);
-        // console.log('Cursor after at: ' + this._cursor);
+    for (const [regexp, tokenType] of Spec) {
+      const tokenValue = this._match(regexp, string);
+
+      // Couldn't match this rule, continue.
+      if (tokenValue == null) {
+        continue;
       }
-      return {
-        type: 'NUMBER',
-        value: number,
-      };
-    } 
 
-    // String: ""
-    if (string[0] === '"'){
-      let s = '';
-      do {
-        s+=string[this._cursor++];
-      }while(string[this._cursor] !== '"' && !this.isEOF()); 
-      this._cursor++; //skip "
+      // should skip token e.g. whitespace.
+      if (tokenType == null) {
+        return this.getNextToken();
+      }
+
       return {
-        type: 'STRING',
-        value: s,
+        type: tokenType,
+        value: tokenValue,
       };
     }
 
-    // String: ''
-    if (string[0] === "'"){
-      let s = '';
-      do {
-        s=string[this._cursor++];
-      }while(string[this._cursor] !== "'" && !this.isEOF()); 
-      this._cursor++; //skip '
-      return {
-        type: 'STRING',
-        value: s,
-      };
-    }
+    throw new SyntaxError(`Unexpected token: "${string[0]}"`);
+  }
 
-    return null;
+  /**
+   * Matched a token for a regular expression.
+   */
+  _match(regexp, string) {
+    const matched = regexp.exec(string);
+    if (matched == null) {
+      return null;
+    }
+    this._cursor += matched[0].length;
+    return matched[0];
   }
 }
 
