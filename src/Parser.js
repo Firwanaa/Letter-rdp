@@ -42,14 +42,64 @@ class Parser {
   Program() {
     return {
       type: 'Program',
-      body: this.Literal(),
+      body: this.StatementList(),
     };
   }
+
+  /**
+   * StatementList
+   *      : Statement
+   *      | StatementList Statement -> Statement Statement Statement
+   *      ;
+   */
+  StatementList() {
+    const statementList = [this.Statement()];
+
+    while (this._lookahead != null) {
+      statementList.push(this.Statement());
+    }
+
+    return statementList;
+  }
+
+  /**
+   * Statement
+   *   : ExpressionStatement
+   *   ;
+   *
+   */
+  Statement(){
+    return this.ExpressionStatement();
+  }
+
+  /**
+   * ExpressionStatement
+   *   : Expression ';'
+   *   ;
+   */
+  ExpressionStatement(){
+    const expression = this.Expression();
+    this._eat(';');
+    return {
+      type: 'ExpressionStatement',
+      expression,
+    }
+  }
+
+  /**
+   * Expression
+   *   : Literal
+   *   ;
+   */
+  Expression(){
+    return this.Literal();
+  }
+
   /**
    * Literal
-   *      : NumericLiteral
-   *      | StringLiteral
-   *      ;
+   *   : NumericLiteral
+   *   | StringLiteral
+   *   ;
    */
   Literal() {
     switch (this._lookahead.type) {
@@ -63,12 +113,12 @@ class Parser {
 
   /**
    * StringLiteral
-   *      : STRING
-   *      ;
+   *   : STRING
+   *   ;
    */
   StringLiteral() {
     const token = this._eat('STRING');
-      console.log(token);
+    console.log(token);
     return {
       type: 'StringLiteral',
       value: token.value.slice(1, -1),
@@ -77,8 +127,8 @@ class Parser {
 
   /**
    * NumericLiteral
-   *      : NumericLiteral
-   *      ;
+   *   : NumericLiteral
+   *   ;
    */
   NumericLiteral() {
     const token = this._eat('NUMBER');
