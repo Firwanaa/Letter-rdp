@@ -130,7 +130,78 @@ class Parser {
    *   ;
    */
   Expression() {
-    return this.Literal();
+    return this.AdditiveExpression();
+  }
+
+  /**
+   * Additive Expression
+   *   : MultiplicativeExpression
+   *   | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpresson
+   *   ;
+   */
+  AdditiveExpression() {
+    return this._BinaryExpression('MultiplicativeExpression', 'ADDITIVE_OPERATOR');
+  }
+
+  /**
+   * MultiplicativeExpression
+   *   : PrimaryExpression
+   *   | AdditiveExpression MULTIPLICATIVE_OPERATOR PrimaryExpresson
+   *   ;
+   */
+  MultiplicativeExpression() {
+    return this._BinaryExpression(
+      'PrimaryExpression',
+      'MULTIPLICATIVE_OPERATOR'
+    );
+  }
+
+  /**
+   * Generic binary expression
+   */
+  _BinaryExpression(buildName, operatorToken) {
+    let left = this[buildName]();
+
+    while (this._lookahead.type === operatorToken) {
+      const operator = this._eat(operatorToken).value;
+
+      const right = this[buildName]();
+
+      left = {
+        type: 'BinaryExpression',
+        operator,
+        left,
+        right,
+      };
+    }
+    return left;
+  }
+
+  /**
+   * PrimaryExpression
+   *   : Literal
+   *   | ParenthesizedExpression
+   *   ;
+   */
+  PrimaryExpression() {
+    switch (this._lookahead.type) {
+      case '(':
+        return this.ParenthesizedExpression();
+      default:
+        return this.Literal();
+    }
+  }
+
+  /**
+   * ParenthesizedExpression
+   *   : '(' Expression ')'
+   *   ;
+   */
+  ParenthesizedExpression() {
+    this._eat('(');
+    const expression = this.Expression();
+    this._eat(')');
+    return expression;
   }
 
   /**

@@ -14,6 +14,7 @@ const tests = [
   require('./statement-list-test'),
   require('./block-test'),
   require('./empty-statement-test'),
+  require('./math-test'),
 ];
 
 const parser = new Parser();
@@ -25,8 +26,7 @@ function exec() {
      */
     "32";
     
-    // Number; //for next time
-    42;
+    (2 + 2);
 
 `;
 
@@ -36,7 +36,7 @@ function exec() {
 }
 
 // Manual test:
-// exec();
+exec();
 
 /**
  * Test function.
