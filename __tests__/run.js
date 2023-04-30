@@ -21,12 +21,9 @@ const parser = new Parser();
 
 function exec() {
   const program = `
-    /**
-     * Multiline comment
-     */
-    "32";
+
     
-    (2 + 2);
+  x += 1;
 
 `;
 
